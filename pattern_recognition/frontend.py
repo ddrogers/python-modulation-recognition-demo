@@ -17,28 +17,38 @@ Analog:
 User can*: 
 Select Modulation
 View input, reconstructed, and sparse plots of autoencoding
+
+Users can: 
+- View can view an introduction welcome
+- Select Data
+- Validate and Test Data
+- View Network Architecture
+- Train Network
+- View Confusion Matrices
+- View ROC Curves
+- Evaluate Network
+
 """
 import os,sys,random
 from glob import glob
 import pickle as cPickle
 import numpy as np
-
 import tkinter as tk
-
 import matplotlib as mpl
+import matplotlib as plt
 import numpy as np
 import sys
 if sys.version_info[0] < 3:
     import Tkinter as tk
 else:
     import tkinter as tk
-import tkinter as ttk
+from tkinter import ttk
+from PIL import ImageTk,Image 
 import matplotlib.backends.tkagg as tkagg
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
-
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -144,108 +154,263 @@ class pattern_recognition(tk.Tk):
 
 		self.frames = {}
 
-		for F in (constellation, scatter,IQ):
+		for F in (StartWindow, SelectData, scatter,IQ):
 			frame = F(container, self)
 			self.frames[F] = frame
 			frame.grid(row=0,column=0,sticky="nsew")
 		
-		self.show_frame(constellation)
+		self.show_frame(StartWindow)
 	
 	def show_frame(self,cont):
 		frame = self.frames[cont]
 		frame.tkraise()
 
-class constellation(tk.Frame):
+class StartWindow(tk.Frame):
+	def __init__(self, parent, controller):
+		tk.Frame.__init__(self,parent)
+		
+		# Create a Main Frame
+		mf = tk.Frame(self, width = 500, height = 400)
+		mf.grid(row = 0, column = 0, columnspan = 2, padx = 10, pady = 10, sticky = tk.W)
+
+		logo=tk.PhotoImage(file='icons/nn.png')
+		w1 = tk.Label(mf, justify = 'center', image = logo)
+		w1.image = logo
+		w1.grid(row = 0, column = 0, padx = 10, pady = 10, rowspan = 2)
+		
+		header = """Welcome To The Modulation Recognition Application"""
+
+		explanation = """Learn how to classify radio frequency signals with neural networks."""
+
+		w2 = tk.Label(mf, 
+					justify=tk.LEFT,
+					padx = 5, pady =1,
+					text=header, font='Helvetica 12 bold')
+		w2.grid(row = 0, column = 1, sticky = 'W')
+
+		w3 = tk.Label(mf, 
+					justify=tk.LEFT, 
+					padx = 5,
+					text=explanation)
+		w3.grid(row = 1, column = 1, sticky = 'W')
+
+		mf2 = tk.Frame(self, width = 500, height = 400)
+		mf2.grid(row = 1, column = 0, columnspan = 2, padx = 10, pady = 10)
+		intro = """
+In modulation recognition problems, a neural network should be able to classify
+inputs into a set of target categories.
+
+For example, recognizing the modulation that a particular radio signal came
+from based on feature analysis.
+		
+The Modulation Recognition app will help select data, develop and 
+train a network, and evaluate the networks pefromance using categorical 
+cross-entropy loss and other evaluation metrics.
+
+"""
+		nnet = """
+A feed forward network, with rectified linear unit (ReLU) hidden and softmax
+output neurons, will classify the inphase and quadrature inputs, given the 
+right number of neurons in the hidden layers. 
+
+The network will be trained with adaptive gradient (Adagrad) batch gradient 
+backwards propagation.
+		"""
+		lf1 = tk.LabelFrame(mf2, width = 500, height = 400, text = "Introduction", relief = "groove", borderwidth = 2)
+		lf1.grid(row = 0, column = 0, padx = 5, pady = 5, sticky = "NSEW")
+
+		m1 = tk.Label(lf1,
+		justify = tk.LEFT,
+		padx = 5, text = intro)
+		m1.grid(row = 0, column = 0, pady = (0,100))
+
+		lf2 = tk.LabelFrame(mf2, width = 500, height = 400, text = "Neural Network",relief = "groove", borderwidth = 2)
+		lf2.grid(row = 0, column = 1, padx = 5, pady = 5, sticky = "NSEW")
+
+		narch=tk.PhotoImage(file='icons/nn_arch.png')
+		img = tk.Label(lf2, justify = 'center', image = narch)
+		img.image = narch
+		img.grid(row = 0, column = 0)
+		
+
+		m2 = tk.Label(lf2,
+		justify = tk.LEFT,
+		padx = 5, text = nnet)
+		m2.grid(row = 1, column = 0, pady = (0,100))
+		
+		# Create Main Frame
+		mf3 = tk.Frame(self, width = 500, height = 50)
+		mf3.grid(row = 2, column = 0, padx = 10, pady = 10, sticky = tk.W)
+
+		# Buttons
+		image=tk.PhotoImage(file='icons/right_arrow.png')
+		# image label
+		il = tk.Button(mf3, image = image, text="To continue, click [Next]", compound = tk.LEFT,relief = tk.FLAT,
+		font='Helvetica 12 bold')
+		il.image = image
+		il.grid(row = 0, column = 0, columnspan = 2, sticky = tk.W)
+		
+#		il2 = tk.Label(mf3, 
+#					justify=tk.LEFT,
+#					text="To continue, click [Next]", font='Helvetica 12 bold')
+#		il2.grid(row = 0, column = 1, sticky = tk.W)
+
+		image2 = ImageTk.PhotoImage(file="icons/nn_mini.png")
+		b1 = tk.Button(mf3, image = image2, text = "Neural Network Start", compound = "left")
+		b1.image = image2
+		b1.grid(row=1, column = 0, sticky = tk.SW, padx = 5)
+
+		image3 = ImageTk.PhotoImage(file="icons/reverse.png")
+		b2 = tk.Button(mf3, image = image3, text = "Welcome", compound = "left", state = "disabled")
+		b2.image = image3
+		b2.grid(row = 1, column = 1, sticky = tk.SW)
+
+		mf4 = tk.Frame(self)
+		mf4.grid(row = 2, column = 1, padx = 10, pady = 10, sticky = tk.SE)
+
+		image4 = ImageTk.PhotoImage(file="icons/left_arrow.png")
+		b11 = tk.Button(mf4,image = image4, text="Back", compound = tk.LEFT, state = "disabled")
+		b11.image = image4
+		b11.grid(row = 1,column = 0, sticky = tk.SE, padx = 5)
+
+		button = tk.Button(mf4, image = image, text = "Next", compound = tk.LEFT,
+		command = lambda: controller.show_frame(SelectData))
+		button.grid(row = 1, column = 1, sticky = tk.SE, padx = 10)
+
+		image5 = ImageTk.PhotoImage(file="icons/cancel.png")
+		button2 = tk.Button(mf4, image = image5, text = "Cancel", compound = tk.LEFT)
+		button2.image = image5
+		button2.grid(row=1, column = 3, sticky = tk.SE)
+
+class SelectData(tk.Frame):
 	def __init__(self, parent, controller):
 		tk.Frame.__init__(self, parent)
 		#label = tk.Label(self, text = "Denoising AutoEncoder: Digital Modulation (Preview)", font = LARGE_FONT)
 		#label.pack(pady=10,padx=10)
 
-		# Labels
-		l1 = tk.Label(self, text="Modulation: ")
-		l1.grid(row=0, column = 0, sticky = tk.W)
-		l2 = tk.Label(self, text="Signal-to-Noise Ratio (SNR):")
-		l2.grid(row=1, column = 0, sticky = tk.W)
-		l3 = tk.Label(self, text="Input")
-		l3.grid(row=0, column = 2)
-		l4 = tk.Label(self, text="Reconstruction")
-		l4.grid(row=0, column = 3)
-		l5 = tk.Label(self, text="Latent Space: AE Clustering (For Selected SNR)")
-		l5.grid(row=2, column = 2, columnspan = 2)
+		# Create a Main Frame
+		mf = tk.Frame(self, width = 500, height = 400)
+		mf.grid(row = 0, column = 0, columnspan = 2, padx = 10, pady = 10, sticky = tk.W)
 
-		# Menus
-		digital_mods = ['BPSK', 'QPSK', '8PSK', 'QAM16', 'QAM64', 'CPFSK','PAM4','GFSK']
+		logo=tk.PhotoImage(file='icons/select_data.png')
+		w1 = tk.Label(mf, justify = 'center', image = logo)
+		w1.image = logo
+		w1.grid(row = 0, column = 0, padx = 5, pady = 5, rowspan = 2)
+		
+		header = """Select Data"""
 
-		mods = tk.StringVar()
-		mods.set(digital_mods[0]) # Inializes
+		explanation = """ Select inputs and targets to define the modulation recognition problem."""
 
+		w2 = tk.Label(mf, 
+					justify=tk.LEFT,
+					padx = 5, 
+					text=header, font='Helvetica 12 bold')
+		w2.grid(row = 0, column = 1, sticky = 'W')
 
-		w = tk.OptionMenu(self, mods, *digital_mods)
-		w.grid(row = 0, column= 1, sticky = tk.W)
-
-
-		# Scale
-		s = tk.Scale(self, from_=-20, to_=20, resolution = 2, orient=tk.VERTICAL)
-		s.grid(row =1, column = 1, sticky = tk.W)
-
-		# Visuals
-		xd, x_train, y_train, x_test, y_test, y_train_encoding, y_test_encoding = load_data()
-
-		# Initialize Canvases
-		c1 = tk.Canvas(self, width = 300, height = 200)
-		c1.grid(row = 1, column = 2, padx = 5)
-		c2 = tk.Canvas(self, width = 300, height = 200)
-		c2.grid(row = 1, column = 3, padx = 5)
-		c3 = tk.Canvas(self, width = 300, height = 200)
-		c3.grid(row=3, column=2, columnspan = 2, stick = tk.W + tk.E + tk.N + tk.S,
-				padx = 5, pady = 5)
+		w3 = tk.Label(mf, 
+					justify=tk.LEFT, 
+					padx = 5,
+					text=explanation)
+		w3.grid(row = 1, column = 1, sticky = 'W')	
+		
+		# Create Main Frame
+		mf2 = tk.Frame(self, width = 500, height = 400)
+		mf2.grid(row = 1, column = 0, columnspan = 2, padx = 10, pady = 10)
+		#test = """ test test test test test test 
+		#test test test test test test test test test"""
+		lf1 = tk.LabelFrame(mf2, width = 500, height = 400, text = "Collect Data from Workspace",relief = "groove", borderwidth = 2)
+		lf1.grid(row = 0, column = 0, padx = 5, pady = 5)
 
 
-		def get_mod_snr():
-			mod = mods.get()
-			snr = s.get()
-			return (mod, snr)
+		m1 = tk.Label(lf1,
+		justify = tk.LEFT,
+		padx = 5, text = "Select data to present to the network.")
+		m1.grid(row = 0, column = 0, columnspan = 3)
 
-		enc_filepath = 'cnn_1.0.h5'
-		ae_filepath = 'cnn_1.1.h5' 
+		images=tk.PhotoImage(file='icons/right_arrow.png')
+		# image label
+		m11 = tk.Button(lf1, image = images, text="Inputs: ", compound = tk.LEFT,relief = tk.FLAT)
+		m11.image = images
+		m11.grid(row = 1, column = 0, columnspan = 2, sticky = tk.E)
 
-		def input_plot ():
-			mod_snr = get_mod_snr()
-			fig = Figure(figsize=(5,3))
-			a = fig.add_subplot(111)
-			a.plot(xd[mod_snr][0][0])
-			a.plot(xd[mod_snr][0][1])
-			canvas = FigureCanvasTkAgg(fig, master=self)
-			canvas.get_tk_widget().grid(row=1, column=2, padx = 5)
-			canvas.draw()
+		optionList = ['(none)', 'sample 2', 'sample 3']
+		
+		options = tk.StringVar()
+		options.set(optionList[0])
+		
+		m12 = tk.OptionMenu(lf1, options, *optionList)
+		
+		m12.grid(row = 1, column  = 2, padx = 5, sticky = tk.E)
 
-			fig = Figure(figsize=(5,3))
-			a = fig.add_subplot(111)
-			a.plot(xd[mod_snr][0])
-			a.plot(xd[mod_snr][1])
-			canvas = FigureCanvasTkAgg(fig, master=self)
-			canvas.get_tk_widget().grid(row=1, column=3, padx = 5)
-			canvas.draw()
+		optionChoice = ['...', 'Train Set', 'Test Set']
+		
+		optionsC = tk.StringVar()
+		optionsC.set(optionChoice[0])
+		
+		m13 = tk.OptionMenu(lf1, optionsC, *optionChoice)
+		
+		m13.grid(row = 1, column  = 3, sticky = tk.E)
 
-			fig = Figure(figsize=(3,3))
-			num_bins = 50
-			a = fig.add_subplot(111)
-			
-			n,bins,patches = a.hist(xd[mod_snr][0][0],num_bins,density = 1)
-			a.set_xlabel('Inphase')
-			a.set_ylabel('# of Occurences')
-			canvas = FigureCanvasTkAgg(fig, master=self)
-			canvas.get_tk_widget().grid(row=3, column=2, columnspan = 2, stick = tk.W + tk.E + tk.N + tk.S,
-				padx = 5, pady = 5)
-			canvas.draw()
+		sep = ttk.Separator(lf1,orient = "horizontal")
+		sep.grid(row = 2, column = 0, sticky = "nsew")
+		
+		#s1 = tk.Frame(lf1, height = 1, width = 250, relief = "groove", bg = "grey")
+		#s1.grid(row = 1, column = 0, columnspan = 3)
+		
+		#m11.grid(row = 2, column = 0)
+		
+		lf2 = tk.LabelFrame(mf2, width = 500, height = 400, text = "Test Title",relief = "groove", borderwidth = 2)
+		lf2.grid(row = 0, column = 1, padx = 5, pady = 5)
+
+		m2 = tk.Message(lf2,
+		justify = tk.LEFT,
+		padx = 5, text = "test")
+		#m2.grid(row = 0, column = 0)
+		
+		# Create Main Frame
+		mf3 = tk.Frame(self, width = 500, height = 50)
+		mf3.grid(row = 2, column = 0, padx = 10, pady = 10, sticky = tk.W)
 
 		# Buttons
-		b1 = tk.Button(self,text="Encode", command = input_plot)
-		b1.grid(row = 4,column = 3, sticky = tk.E, padx = 5)
+		image=tk.PhotoImage(file='icons/right_arrow.png')
+		# image label
+		il = tk.Button(mf3, image = image, text="To continue, click [Next]", compound = tk.LEFT,relief = tk.FLAT,
+		font='Helvetica 12 bold')
+		il.image = image
+		il.grid(row = 0, column = 0, columnspan = 2, sticky = tk.W)
+		
+#		il2 = tk.Label(mf3, 
+#					justify=tk.LEFT,
+#					text="To continue, click [Next]", font='Helvetica 12 bold')
+#		il2.grid(row = 0, column = 1, sticky = tk.W)
 
-		button = ttk.Button(self, text = "Next",
+		image2 = ImageTk.PhotoImage(file="icons/nn_mini.png")
+		b1 = tk.Button(mf3, image = image2, text = "Neural Network Start", compound = "left")
+		b1.image = image2
+		b1.grid(row=1, column = 0, sticky = tk.SW, padx = 5)
+
+		image3 = ImageTk.PhotoImage(file="icons/reverse.png")
+		b2 = tk.Button(mf3, image = image3, text = "Welcome", compound = "left", state = "disabled")
+		b2.image = image3
+		b2.grid(row = 1, column = 1, sticky = tk.SW)
+
+		mf4 = tk.Frame(self)
+		mf4.grid(row = 2, column = 1, padx = 10, pady = 10, sticky = tk.SE)
+
+		image4 = ImageTk.PhotoImage(file="icons/left_arrow.png")
+		b11 = tk.Button(mf4,image = image4, text="Back", compound = tk.LEFT, command = lambda: controller.show_frame(StartWindow))
+		b11.image = image4
+		b11.grid(row = 1,column = 0, sticky = tk.SE, padx = 5)
+
+		button = tk.Button(mf4, image = image, text = "Next", compound = tk.LEFT,
 		command = lambda: controller.show_frame(scatter))
-		button.grid(row = 4, column = 4, sticky = tk.E, padx = 5)
+		button.grid(row = 1, column = 1, sticky = tk.SE, padx = 10)
+
+		image5 = ImageTk.PhotoImage(file="icons/cancel.png")
+		button2 = tk.Button(mf4, image = image5, text = "Cancel", compound = tk.LEFT)
+		button2.image = image5
+		button2.grid(row=1, column = 3, sticky = tk.SE)
+
 
 class scatter(tk.Frame):
 	def __init__(self, parent, controller):
@@ -253,10 +418,10 @@ class scatter(tk.Frame):
 		label = tk.Label(self, text = "3D Scatter Plot", font = LARGE_FONT)
 		label.pack(pady=10,padx=10)
 	
-		button = ttk.Button(self, text = "Back",
-		command = lambda: controller.show_frame(constellation))
+		button = tk.Button(self, text = "Back",
+		command = lambda: controller.show_frame(SelectData))
 		button.pack()
-		button2 = ttk.Button(self, text = "Next",
+		button2 = tk.Button(self, text = "Next",
 		command = lambda: controller.show_frame(IQ))
 		button2.pack()
 
@@ -266,7 +431,7 @@ class IQ(tk.Frame):
 		label = tk.Label(self, text = "I/Q Data", font = LARGE_FONT)
 		label.pack(pady=10,padx=10)
 	
-		button = ttk.Button(self, text = "Back",
+		button = tk.Button(self, text = "Back",
 		command = lambda: controller.show_frame(scatter))
 		button.pack()
 
