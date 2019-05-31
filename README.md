@@ -1,4 +1,4 @@
-Copyright (c) 2018, Donald D. Rogers II
+Copyright (c) 2018, [Donald D. Rogers II](https://www.linkedin.com/in/donaldrogersii/)
 
 # Modulation Recognition with Convolutional Neural Networks
 
