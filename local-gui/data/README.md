@@ -1,1 +1,1 @@
-A Python script for partionioning the main data set for distribution can be found here. 
+Data for the GUI can be found [here](https://www.deepsig.io/datasets).
